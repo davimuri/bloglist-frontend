@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import './App.css'
+import Toggable from './components/Togglable'
 import Login from './components/Login'
 import Notification from './components/Notification'
 import Blog from './components/Blog'
@@ -43,12 +44,38 @@ const App = () => {
   const getBlogs = () => {
     blogService
       .getAll()
-      .then(blogList => setBlogs(blogList))
+      .then(blogList =>
+        setBlogs(blogList.sort((b1, b2) => b2.likes - b1.likes))
+      )
   }
 
   const handleSavedBlog = (savedBlog) => {
-    setBlogs(blogs.concat(savedBlog))
+    const newBlogList = blogs
+      .concat(savedBlog)
+      .sort((b1, b2) => b2.likes - b1.likes)
+    setBlogs(newBlogList)
     sendNotification({ message: 'Blog created', type: 'info' })
+  }
+
+  const handleUpdatedBlog = (updatedBlog) => {
+    const index = blogs
+      .findIndex(b => b.id.toString() === updatedBlog.id.toString())
+    const newBlogList = blogs
+      .slice(0, index)
+      .concat(updatedBlog)
+      .concat(blogs.slice(index+1, blogs.length))
+      .sort((b1, b2) => b2.likes - b1.likes)
+    setBlogs(newBlogList)
+    sendNotification({ message: 'Blog updated', type: 'info' })
+  }
+
+  const handleDeletedBlog = blogId => {
+    const index = blogs.findIndex(b => b.id.toString() === blogId.toString())
+    const newBlogList = blogs
+      .slice(0, index)
+      .concat(blogs.slice(index+1, blogs.length))
+    setBlogs(newBlogList)
+    sendNotification({ message: 'Blog deleted', type: 'info' })
   }
 
   const handleError = (error) => {
@@ -65,13 +92,22 @@ const App = () => {
   return (
     <div>
       <Notification data={notification} />
-      <Login user={user} handleUserLoggedIn={handleUserLoggedIn}
-        handleUserLoggedOut={handleUserLoggedOut}
-        handleError={handleError} />
-      <BlogForm user={user} handleSavedBlog={handleSavedBlog} 
-        handleError={handleError} />
+      <Toggable buttonLabel='Login'>
+        <Login user={user} handleUserLoggedIn={handleUserLoggedIn}
+          handleUserLoggedOut={handleUserLoggedOut}
+          handleError={handleError} />
+      </Toggable>
+      <Toggable buttonLabel='New blog'>
+        <BlogForm user={user} handleSavedBlog={handleSavedBlog}
+          handleError={handleError} />
+      </Toggable>
       <h1>Blogs</h1>
-      {blogs.map(b => <Blog key={b.id} blog={b} />)}
+      {blogs.map(b =>
+        <Blog key={b.id} user={user} blog={b}
+          handleUpdatedBlog={handleUpdatedBlog}
+          handleDeletedBlog={handleDeletedBlog}
+          handleError={handleError} />
+      )}
     </div>
   )
 }

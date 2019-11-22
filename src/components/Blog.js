@@ -2,7 +2,9 @@ import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import blogService from '../services/blogs'
 
-const Blog = ({ user, blog, handleUpdatedBlog, handleDeletedBlog, handleError }) => {
+const Blog = ({ user, blog, handleUpdatedBlog, handleDeletedBlog,
+  handleError }) => {
+
   const [expand, setExpand] = useState(false)
 
   const handleLikeButton = async (blogId) => {
@@ -34,22 +36,16 @@ const Blog = ({ user, blog, handleUpdatedBlog, handleDeletedBlog, handleError })
     }
   }
 
-  const blogStyle = {
-    paddingTop: 10,
-    paddingLeft: 2,
-    border: 'solid',
-    borderWidth: 1,
-    marginBottom: 5
-  }
-
   if (expand) {
     return (
-      <div style={blogStyle}>
-        <div onClick={() => setExpand(!expand)} >
+      <div className='blog'>
+        <div onClick={() => setExpand(!expand)} data-testid='expandedDiv' >
           {blog.title} {blog.author} <br />
           {blog.url} <br />
           Likes: {blog.likes}
-          <button onClick={() => handleLikeButton(blog.id)}>Like</button><br />
+          <button onClick={() => handleLikeButton(blog.id)} data-testid='likeButton' >
+            Like
+          </button><br />
           Added by {blog.user ? blog.user.name : 'anonymous'}<br />
           {displayDeleteButton()}
         </div>
@@ -57,8 +53,8 @@ const Blog = ({ user, blog, handleUpdatedBlog, handleDeletedBlog, handleError })
     )
   } else {
     return (
-      <div style={blogStyle}>
-        <div onClick={() => setExpand(!expand)} >
+      <div className='blog'>
+        <div onClick={() => setExpand(!expand)} data-testid='collapsedDiv' >
           {blog.title} {blog.author}
         </div>
       </div>

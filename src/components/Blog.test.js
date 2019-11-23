@@ -4,6 +4,18 @@ import { prettyDOM } from '@testing-library/dom'
 jest.mock('../services/blogs')
 import Blog from './Blog'
 
+const handleUpdatedBlog = updatedBlog => {
+  console.log(updatedBlog)
+}
+
+const handleDeletedBlog = deletedBlog => {
+  console.log(deletedBlog)
+}
+
+const handleError = error => {
+  console.log(error)
+}
+
 test('renders content when collapsed', () => {
   const user = {
     username: 'abcdef'
@@ -18,18 +30,6 @@ test('renders content when collapsed', () => {
       username: 'abcdef'
     },
     id: '141243124'
-  }
-
-  const handleUpdatedBlog = updatedBlog => {
-    console.log(updatedBlog)
-  }
-
-  const handleDeletedBlog = deletedBlog => {
-    console.log(deletedBlog)
-  }
-
-  const handleError = error => {
-    console.log(error)
   }
 
   const component = render(
@@ -63,17 +63,6 @@ test('renders right content when expanded', async () => {
     id: '141243124'
   }
 
-  const handleUpdatedBlog = updatedBlog => {
-    console.log(updatedBlog)
-  }
-
-  const handleDeletedBlog = deletedBlog => {
-    console.log(deletedBlog)
-  }
-
-  const handleError = error => {
-    console.log(error)
-  }
 
   const component = render(
     <Blog user={user} blog={blog}
@@ -114,20 +103,8 @@ test('likes button calls handler right amount of times', async () => {
     id: '141243124'
   }
 
-  const handleUpdatedBlog = updatedBlog => {
-    console.log(updatedBlog)
-  }
-
-  const handleDeletedBlog = deletedBlog => {
-    console.log(deletedBlog)
-  }
-
-  const handleError = error => {
-    console.log(error)
-  }
-
-  const mockHandleUpdatedBlog = jest.fn(savedBlog => {})
-  const mockHandleError = jest.fn(error => {})
+  const mockHandleUpdatedBlog = jest.fn()
+  const mockHandleError = jest.fn()
 
   const component = render(
     <Blog user={user} blog={blog}

@@ -1,19 +1,23 @@
-import React, { useState } from 'react'
+import React from 'react'
+import  { useField } from '../hooks'
 import loginService from '../services/login'
 
 const Login = ({ user, handleUserLoggedIn, handleUserLoggedOut, handleError }) => {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
+  const usernameField = useField('text', 'Username')
+  const passwordField = useField('password', 'Password')
 
   const LOCAL_STORAGE_LOGGED_USER = 'BlogListAppLoggedUser'
 
   const handleLogin = async (event) => {
     event.preventDefault()
     try {
-      const loggedInUser = await loginService.login({ username, password })
+      const loggedInUser = await loginService.login({
+        username: usernameField.props.value,
+        password: passwordField.props.value
+      })
       window.localStorage.setItem(LOCAL_STORAGE_LOGGED_USER, JSON.stringify(loggedInUser))
-      setUsername('')
-      setPassword('')
+      usernameField.clean()
+      passwordField.clean()
       handleUserLoggedIn(loggedInUser)
     } catch (exception) {
       handleError({ message: 'Wrong username or password', type: 'error' })
@@ -32,11 +36,11 @@ const Login = ({ user, handleUserLoggedIn, handleUserLoggedOut, handleError }) =
         <form onSubmit={handleLogin}>
           <div>
             username
-            <input type="text" value={username} name="Username" onChange={({ target }) => setUsername(target.value)} />
+            <input {...usernameField.props} />
           </div>
           <div>
             password
-            <input type="password" value={password} name="Password" onChange={({ target }) => setPassword(target.value)} />
+            <input {...passwordField.props} />
           </div>
           <button type="submit">login</button>
         </form>

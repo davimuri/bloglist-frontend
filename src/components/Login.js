@@ -1,35 +1,31 @@
 import React from 'react'
-import  { useField } from '../hooks'
-import loginService from '../services/login'
+import { connect } from 'react-redux'
 
-const Login = ({ user, handleUserLoggedIn, handleUserLoggedOut, handleError }) => {
+import  { useField } from '../hooks'
+import { loginAction, logoutAction } from '../reducers/loginReducer'
+import { notifyAction } from '../reducers/notificationReducer'
+
+const Login = (props) => {
   const usernameField = useField('text', 'Username')
   const passwordField = useField('password', 'Password')
-
-  const LOCAL_STORAGE_LOGGED_USER = 'BlogListAppLoggedUser'
 
   const handleLogin = async (event) => {
     event.preventDefault()
     try {
-      const loggedInUser = await loginService.login({
-        username: usernameField.props.value,
-        password: passwordField.props.value
-      })
-      window.localStorage.setItem(LOCAL_STORAGE_LOGGED_USER, JSON.stringify(loggedInUser))
+      props.loginAction(usernameField.props.value, passwordField.props.value)
       usernameField.clean()
       passwordField.clean()
-      handleUserLoggedIn(loggedInUser)
+      props.notifyAction({ message: 'Hello!', type: 'info' }, 10)
     } catch (exception) {
-      handleError({ message: 'Wrong username or password', type: 'error' })
+      props.notifyAction({ message: 'Wrong username or password', type: 'error' }, 10)
     }
   }
 
   const handleLogout = () => {
-    window.localStorage.removeItem(LOCAL_STORAGE_LOGGED_USER)
-    handleUserLoggedOut()
+    props.logoutAction()
   }
 
-  if (user === null) {
+  if (props.user === null) {
     return (
       <div>
         <h2>Login</h2>
@@ -50,7 +46,7 @@ const Login = ({ user, handleUserLoggedIn, handleUserLoggedOut, handleError }) =
     return (
       <div>
         <p>
-          {user.name} logged in
+          {props.user.name} logged in
           <button onClick={() => handleLogout()}>Logout</button>
         </p>
       </div>
@@ -58,4 +54,20 @@ const Login = ({ user, handleUserLoggedIn, handleUserLoggedOut, handleError }) =
   }
 }
 
-export default Login
+const mapStateToProps = (state) => {
+  return {
+    user: state.user
+  }
+}
+
+const mapDispatchToProps = {
+  loginAction,
+  logoutAction,
+  notifyAction
+}
+
+const ConnectedLogin = connect(
+  mapStateToProps, mapDispatchToProps
+)(Login)
+
+export default ConnectedLogin

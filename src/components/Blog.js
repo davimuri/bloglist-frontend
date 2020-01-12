@@ -1,29 +1,29 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
-import blogService from '../services/blogs'
 
-const Blog = ({ user, blog, handleUpdatedBlog, handleDeletedBlog,
-  handleError }) => {
+
+const Blog = ({ user, blog, handleLikeBlog, handleDeleteBlog,
+  handleNotify }) => {
 
   const [expand, setExpand] = useState(false)
 
-  const handleLikeButton = async (blogId) => {
+  const handleLikeButton = async () => {
     try {
-      const savedBlog = await blogService.like(blogId)
+      handleLikeBlog()
       setExpand(true)
-      handleUpdatedBlog(savedBlog)
+      handleNotify({ message: 'Blog updated', type: 'info' }, 10)
     } catch (exception) {
-      handleError({ message: exception.response.data.error, type: 'error' })
+      handleNotify({ message: exception.response.data.error, type: 'error' }, 10)
     }
   }
 
-  const handleDeleteButton = async (blogId) => {
+  const handleDeleteButton = async () => {
     if (window.confirm(`Do you want to delete blog "${blog.title}" ?`)) {
       try {
-        await blogService.remove(blogId)
-        handleDeletedBlog(blogId)
+        handleDeleteBlog()
+        handleNotify({ message: 'Blog deleted', type: 'info' }, 10)
       } catch (exception) {
-        handleError({ message: exception.response.data.error, type: 'error' })
+        handleNotify({ message: exception.response.data.error, type: 'error' }, 10)
       }
     }
   }
@@ -31,7 +31,7 @@ const Blog = ({ user, blog, handleUpdatedBlog, handleDeletedBlog,
   const displayDeleteButton = () => {
     if (user && blog.user && user.username === blog.user.username) {
       return (
-        <button onClick={() => handleDeleteButton(blog.id)}>Delete</button>
+        <button onClick={() => handleDeleteButton()}>Delete</button>
       )
     }
   }
@@ -43,7 +43,7 @@ const Blog = ({ user, blog, handleUpdatedBlog, handleDeletedBlog,
           {blog.title} {blog.author} <br />
           {blog.url} <br />
           Likes: {blog.likes}
-          <button onClick={() => handleLikeButton(blog.id)} data-testid='likeButton' >
+          <button onClick={() => handleLikeButton()} data-testid='likeButton' >
             Like
           </button><br />
           Added by {blog.user ? blog.user.name : 'anonymous'}<br />
@@ -65,9 +65,9 @@ const Blog = ({ user, blog, handleUpdatedBlog, handleDeletedBlog,
 Blog.propTypes = {
   user: PropTypes.object,
   blog: PropTypes.object.isRequired,
-  handleUpdatedBlog: PropTypes.func.isRequired,
-  handleDeletedBlog: PropTypes.func.isRequired,
-  handleError: PropTypes.func.isRequired
+  handleLikeBlog: PropTypes.func.isRequired,
+  handleDeleteBlog: PropTypes.func.isRequired,
+  handleNotify: PropTypes.func.isRequired
 }
 
 export default Blog

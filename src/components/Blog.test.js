@@ -4,15 +4,15 @@ import { prettyDOM } from '@testing-library/dom'
 jest.mock('../services/blogs')
 import Blog from './Blog'
 
-const handleUpdatedBlog = updatedBlog => {
+const handleLikeBlog = updatedBlog => {
   console.log(updatedBlog)
 }
 
-const handleDeletedBlog = deletedBlog => {
+const handleDeleteBlog = deletedBlog => {
   console.log(deletedBlog)
 }
 
-const handleError = error => {
+const handleNotify = error => {
   console.log(error)
 }
 
@@ -34,9 +34,9 @@ test('renders content when collapsed', () => {
 
   const component = render(
     <Blog user={user} blog={blog}
-      handleUpdatedBlog={handleUpdatedBlog}
-      handleDeletedBlog={handleDeletedBlog}
-      handleError={handleError} />
+      handleLikeBlog={handleLikeBlog}
+      handleDeleteBlog={handleDeleteBlog}
+      handleNotify={handleNotify} />
   )
 
   expect(component.container).toHaveTextContent(blog.title)
@@ -66,9 +66,9 @@ test('renders right content when expanded', async () => {
 
   const component = render(
     <Blog user={user} blog={blog}
-      handleUpdatedBlog={handleUpdatedBlog}
-      handleDeletedBlog={handleDeletedBlog}
-      handleError={handleError} />
+      handleLikeBlog={handleLikeBlog}
+      handleDeleteBlog={handleDeleteBlog}
+      handleNotify={handleNotify} />
   )
 
   const collapsedDiv = component.getByTestId('collapsedDiv')
@@ -103,14 +103,14 @@ test('likes button calls handler right amount of times', async () => {
     id: '141243124'
   }
 
-  const mockHandleUpdatedBlog = jest.fn()
+  const mockHandleLikeBlog = jest.fn()
   const mockHandleError = jest.fn()
 
   const component = render(
     <Blog user={user} blog={blog}
-      handleUpdatedBlog={mockHandleUpdatedBlog}
-      handleDeletedBlog={handleDeletedBlog}
-      handleError={mockHandleError} />
+      handleLikeBlog={mockHandleLikeBlog}
+      handleDeleteBlog={handleDeleteBlog}
+      handleNotify={mockHandleError} />
   )
 
   const collapsedDiv = component.getByTestId('collapsedDiv')
@@ -124,5 +124,5 @@ test('likes button calls handler right amount of times', async () => {
   const likeButton = component.getByTestId('likeButton')
   await fireEvent.click(likeButton)
 
-  expect(mockHandleUpdatedBlog.mock.calls.length).toBe(1)
+  expect(mockHandleLikeBlog.mock.calls.length).toBe(1)
 })

@@ -1,8 +1,11 @@
 import React from 'react'
-import  { useField } from '../hooks'
-import blogService from '../services/blogs'
+import { connect } from 'react-redux'
 
-const BlogForm = ({ user, handleSavedBlog, handleError }) => {
+import  { useField } from '../hooks'
+import { createBlogAction } from '../reducers/blogReducer'
+import { notifyAction } from '../reducers/notificationReducer'
+
+const BlogForm = (props) => {
   const titileField = useField('text', 'Title')
   const authorField = useField('text', 'Author')
   const urlField = useField('text', 'URL')
@@ -15,17 +18,17 @@ const BlogForm = ({ user, handleSavedBlog, handleError }) => {
       url: urlField.props.value
     }
     try {
-      const savedBlog = await blogService.create(newBlog)
-      handleSavedBlog(savedBlog)
+      props.createBlogAction(newBlog)
       titileField.clean()
       authorField.clean()
       urlField.clean()
+      props.notifyAction({ message: 'Blog created', type: 'info' }, 10)
     } catch (exception) {
-      handleError({ message: exception.response.data.error, type: 'error' })
+      props.notifyAction({ message: exception.response.data.error, type: 'error' }, 10)
     }
   }
 
-  if (user) {
+  if (props.user) {
     return (
       <div>
         <h2>New Blog</h2>
@@ -51,4 +54,19 @@ const BlogForm = ({ user, handleSavedBlog, handleError }) => {
   }
 }
 
-export default BlogForm
+const mapStateToProps = (state) => {
+  return {
+    user: state.user
+  }
+}
+
+const mapDispatchToProps = {
+  createBlogAction,
+  notifyAction
+}
+
+const ConnectedBlogForm = connect(
+  mapStateToProps, mapDispatchToProps
+)(BlogForm)
+
+export default ConnectedBlogForm

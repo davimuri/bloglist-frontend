@@ -1,115 +1,43 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
+import { connect } from 'react-redux'
+
 import './App.css'
 import Toggable from './components/Togglable'
 import Login from './components/Login'
 import Notification from './components/Notification'
-import Blog from './components/Blog'
+import Blogs from './components/Blogs'
 import BlogForm from './components/BlogForm'
-import blogService from './services/blogs'
+import { loadLoggedUserFromLocalStorageAction } from './reducers/loginReducer'
+import { initializeBlogsAction } from './reducers/blogReducer'
 
-const LOCAL_STORAGE_LOGGED_USER = 'BlogListAppLoggedUser'
+const App = (props) => {
+  const loadLoggedUser = props.loadLoggedUserFromLocalStorageAction
+  useEffect(() => { loadLoggedUser() }, [loadLoggedUser])
 
-const App = () => {
-  // user logged in
-  const [user, setUser] = useState(null)
-  // blog list
-  const [blogs, setBlogs] = useState([])
-  // notification messages
-  const [notification, setNotification] = useState({ message: null , type: null })
-
-  useEffect(() => loadLoggedUserFromLocalStorage(), [])
-
-  useEffect(() => getBlogs(), [])
-
-  const loadLoggedUserFromLocalStorage = () => {
-    const loggedUserJSON = window.localStorage.getItem(LOCAL_STORAGE_LOGGED_USER)
-    if (loggedUserJSON) {
-      const user = JSON.parse(loggedUserJSON)
-      setUser(user)
-      blogService.setToken(user.token)
-    }
-  }
-
-  const handleUserLoggedIn = (loggedInUser) => {
-    blogService.setToken(loggedInUser.token)
-    setUser(loggedInUser)
-    sendNotification({ message: `Hello ${loggedInUser.name}`, type: 'info' })
-  }
-
-  const handleUserLoggedOut = () => {
-    setUser(null)
-    blogService.setToken(null)
-  }
-
-  const getBlogs = () => {
-    blogService
-      .getAll()
-      .then(blogList =>
-        setBlogs(blogList.sort((b1, b2) => b2.likes - b1.likes))
-      )
-  }
-
-  const handleSavedBlog = (savedBlog) => {
-    const newBlogList = blogs
-      .concat(savedBlog)
-      .sort((b1, b2) => b2.likes - b1.likes)
-    setBlogs(newBlogList)
-    sendNotification({ message: 'Blog created', type: 'info' })
-  }
-
-  const handleUpdatedBlog = (updatedBlog) => {
-    const index = blogs
-      .findIndex(b => b.id.toString() === updatedBlog.id.toString())
-    const newBlogList = blogs
-      .slice(0, index)
-      .concat(updatedBlog)
-      .concat(blogs.slice(index+1, blogs.length))
-      .sort((b1, b2) => b2.likes - b1.likes)
-    setBlogs(newBlogList)
-    sendNotification({ message: 'Blog updated', type: 'info' })
-  }
-
-  const handleDeletedBlog = blogId => {
-    const index = blogs.findIndex(b => b.id.toString() === blogId.toString())
-    const newBlogList = blogs
-      .slice(0, index)
-      .concat(blogs.slice(index+1, blogs.length))
-    setBlogs(newBlogList)
-    sendNotification({ message: 'Blog deleted', type: 'info' })
-  }
-
-  const handleError = (error) => {
-    sendNotification(error)
-  }
-
-  const sendNotification = message => {
-    setNotification(message)
-    setTimeout(() => {
-      setNotification({ message: null , type: null })
-    }, 5000)
-  }
+  const loadBlogs = props.initializeBlogsAction
+  useEffect(() => { loadBlogs() }, [loadBlogs])
 
   return (
     <div>
-      <Notification data={notification} />
+      <Notification />
       <Toggable buttonLabel='Login'>
-        <Login user={user} handleUserLoggedIn={handleUserLoggedIn}
-          handleUserLoggedOut={handleUserLoggedOut}
-          handleError={handleError} />
+        <Login />
       </Toggable>
       <Toggable buttonLabel='New blog'>
-        <BlogForm user={user} handleSavedBlog={handleSavedBlog}
-          handleError={handleError} />
+        <BlogForm />
       </Toggable>
-      <h1>Blogs</h1>
-      {blogs.map(b =>
-        <Blog key={b.id} user={user} blog={b}
-          handleUpdatedBlog={handleUpdatedBlog}
-          handleDeletedBlog={handleDeletedBlog}
-          handleError={handleError} />
-      )}
+      <Blogs />
     </div>
   )
 }
 
-export default App
+const mapDispatchToProps = {
+  loadLoggedUserFromLocalStorageAction,
+  initializeBlogsAction
+}
+
+const ConnectedApp = connect(
+  null, mapDispatchToProps
+)(App)
+
+export default ConnectedApp

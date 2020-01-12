@@ -1,11 +1,13 @@
 import React from 'react'
+import { Provider } from 'react-redux'
 import { render, waitForElement } from '@testing-library/react'
 jest.mock('./services/blogs')
 import App from './App'
+import store from './store'
 
 test('if no user logged, blogs are rendered', async () => {
-  const component = render(<App />)
-  component.rerender(<App />)
+  const component = render(<Provider store={store}><App /></Provider>)
+  component.rerender(<Provider store={store}><App /></Provider>)
 
   await waitForElement(
     () => component.container.querySelector('.blog')
@@ -24,8 +26,8 @@ test('if user logged, blogs are rendered', async () => {
 
   localStorage.setItem('BlogListAppLoggedUser', JSON.stringify(user))
 
-  const component = render(<App />)
-  component.rerender(<App />)
+  const component = render(<Provider store={store}><App /></Provider>)
+  component.rerender(<Provider store={store}><App /></Provider>)
 
   await waitForElement(
     () => component.container.querySelector('.blog')

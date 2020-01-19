@@ -8,12 +8,16 @@ const blogReducer = (state = [], action) => {
     return state
       .concat(action.blog)
       .sort((b1, b2) => b2.likes - b1.likes)
-  case 'UPDATE_BLOG': {
+  case 'LIKE_BLOG': {
     const index = state
       .findIndex(b => b.id.toString() === action.blog.id.toString())
+    const likedBlog = {
+      ...state[index],
+      likes: action.blog.likes
+    }
     const newBlogList = state
       .slice(0, index)
-      .concat(action.blog)
+      .concat(likedBlog)
       .concat(state.slice(index+1, state.length))
       .sort((b1, b2) => b2.likes - b1.likes)
     return newBlogList
@@ -22,6 +26,20 @@ const blogReducer = (state = [], action) => {
     const index = state.findIndex(b => b.id.toString() === action.blogId.toString())
     return [
       ...state.slice(0, index),
+      ...state.slice(index+1, state.length)
+    ]
+  }
+  case 'ADD_COMMENT': {
+    const comment = action.comment
+    const index = state
+      .findIndex(b => b.id.toString() === comment.blog.toString())
+    const blog = {
+      ...state[index],
+      comments: state[index].comments.concat(comment)
+    }
+    return [
+      ...state.slice(0, index),
+      blog,
       ...state.slice(index+1, state.length)
     ]
   }
@@ -56,7 +74,7 @@ export const likeBlogAction = blogId => {
   return async dispatch => {
     const savedBlog = await blogService.like(blogId)
     dispatch({
-      type: 'UPDATE_BLOG',
+      type: 'LIKE_BLOG',
       blog: savedBlog
     })
   }
@@ -68,6 +86,16 @@ export const deleteBlogAction = blogId => {
     dispatch({
       type: 'DELETE_BLOG',
       blogId
+    })
+  }
+}
+
+export const createBlogCommentAction = (blogId, text) => {
+  return async dispatch => {
+    const comment = await blogService.createComment(blogId, text)
+    dispatch({
+      type: 'ADD_COMMENT',
+      comment
     })
   }
 }

@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
 
@@ -40,7 +41,7 @@ const Blog = ({ user, blog, handleLikeBlog, handleDeleteBlog,
     return (
       <div className='blog'>
         <div onClick={() => setExpand(!expand)} data-testid='expandedDiv' >
-          {blog.title} {blog.author} <br />
+          <Link to={`/blogs/${blog.id}`}>{blog.title}</Link> {blog.author} <br />
           {blog.url} <br />
           Likes: {blog.likes}
           <button onClick={() => handleLikeButton()} data-testid='likeButton' >

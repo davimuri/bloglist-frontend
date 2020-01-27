@@ -1,21 +1,28 @@
-import React from 'react'
-import { connect } from 'react-redux'
+import React, { useState } from 'react'
+import Snackbar from '@material-ui/core/Snackbar'
 
 const Notification = ({ notification }) => {
+  const [open, setOpen] = useState(true)
+
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return
+    }
+    setOpen(false)
+  }
+
   if (!notification) {
     return null
   }
+  const position = {
+    vertical: 'top',
+    horizontal: 'right',
+  }
   return (
-    <div className={notification.type}>
-      {notification.message}
-    </div>
+    <Snackbar message={notification.message}
+      autoHideDuration={6000} open={open} onClose={handleClose}
+      anchorOrigin={position} className={notification.type} />
   )
 }
 
-const mapStateToProps = (state) => {
-  return {
-    notification: state.notification
-  }
-}
-
-export default connect(mapStateToProps)(Notification)
+export default Notification

@@ -1,74 +1,60 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
+import Card from '@material-ui/core/Card'
+import CardActions from '@material-ui/core/CardActions'
+import CardContent from '@material-ui/core/CardContent'
+import CardHeader from '@material-ui/core/CardHeader'
+import IconButton from '@material-ui/core/IconButton'
+import DeleteIcon from '@material-ui/icons/Delete'
+import FavoriteIcon from '@material-ui/icons/Favorite'
+import VisibilityIcon from '@material-ui/icons/Visibility'
+import Typography from '@material-ui/core/Typography'
 
-
-const Blog = ({ user, blog, handleLikeBlog, handleDeleteBlog,
-  handleNotify }) => {
-
-  const [expand, setExpand] = useState(false)
+const Blog = ({ user, blog, handleLikeBlog, handleDeleteBlog }) => {
 
   const handleLikeButton = async () => {
-    try {
-      handleLikeBlog()
-      setExpand(true)
-      handleNotify({ message: 'Blog updated', type: 'info' }, 10)
-    } catch (exception) {
-      handleNotify({ message: exception.response.data.error, type: 'error' }, 10)
-    }
-  }
-
-  const handleDeleteButton = async () => {
-    if (window.confirm(`Do you want to delete blog "${blog.title}" ?`)) {
-      try {
-        handleDeleteBlog()
-        handleNotify({ message: 'Blog deleted', type: 'info' }, 10)
-      } catch (exception) {
-        handleNotify({ message: exception.response.data.error, type: 'error' }, 10)
-      }
-    }
+    handleLikeBlog()
   }
 
   const displayDeleteButton = () => {
     if (user && blog.user && user.username === blog.user.username) {
       return (
-        <button onClick={() => handleDeleteButton()}>Delete</button>
+        <IconButton onClick={() => handleDeleteBlog()}>
+          <DeleteIcon />
+        </IconButton>
       )
     }
   }
 
-  if (expand) {
-    return (
-      <div className='blog'>
-        <div onClick={() => setExpand(!expand)} data-testid='expandedDiv' >
-          <Link to={`/blogs/${blog.id}`}>{blog.title}</Link> {blog.author} <br />
-          {blog.url} <br />
-          Likes: {blog.likes}
-          <button onClick={() => handleLikeButton()} data-testid='likeButton' >
-            Like
-          </button><br />
-          Added by {blog.user ? blog.user.name : 'anonymous'}<br />
-          {displayDeleteButton()}
-        </div>
-      </div>
-    )
-  } else {
-    return (
-      <div className='blog'>
-        <div onClick={() => setExpand(!expand)} data-testid='collapsedDiv' >
-          {blog.title} {blog.author}
-        </div>
-      </div>
-    )
-  }
+  return (
+    <Card variant="outlined">
+      <CardHeader title={blog.title} subheader={blog.author}/>
+      <CardContent>
+        <Typography variant="body2" color="textSecondary" component="p">
+          <a href={blog.url} target='_blank' rel='noreferrer noopener'>Website</a><br />
+            Added by {blog.user ? blog.user.name : 'anonymous'}
+        </Typography>
+      </CardContent>
+      <CardActions>
+        {blog.likes}
+        <IconButton onClick={() => handleLikeButton()} aria-label="like">
+          <FavoriteIcon />
+        </IconButton>
+        <Link to={`/blogs/${blog.id}`}>
+          <VisibilityIcon />
+        </Link>
+        {displayDeleteButton()}
+      </CardActions>
+    </Card>
+  )
 }
 
 Blog.propTypes = {
   user: PropTypes.object,
   blog: PropTypes.object.isRequired,
   handleLikeBlog: PropTypes.func.isRequired,
-  handleDeleteBlog: PropTypes.func.isRequired,
-  handleNotify: PropTypes.func.isRequired
+  handleDeleteBlog: PropTypes.func.isRequired
 }
 
 export default Blog

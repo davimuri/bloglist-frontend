@@ -1,14 +1,16 @@
 import loginService from '../services/login'
 import blogService from '../services/blogs'
 
-const loginReducer = (state = null, action) => {
+const loginReducer = (state = { }, action) => {
   switch (action.type) {
   case 'LOAD_LOGGED_USER':
-    return action.user
+    return { data: action.user }
   case 'LOGIN':
-    return action.user
+    return { data: action.user }
+  case 'LOGIN_ERROR':
+    return { error: ' ' }
   case 'LOGOUT':
-    return null
+    return { }
   default:
     return state
   }
@@ -33,16 +35,25 @@ export const loadLoggedUserFromLocalStorageAction = () => {
 
 export const loginAction = (username, password) => {
   return async dispatch => {
-    const loggedInUser = await loginService.login({
-      username,
-      password
-    })
-    window.localStorage.setItem(LOCAL_STORAGE_LOGGED_USER, JSON.stringify(loggedInUser))
-    blogService.setToken(loggedInUser.token)
-    dispatch({
-      type: 'LOGIN',
-      user: loggedInUser
-    })
+    try {
+      const loggedInUser = await loginService.login({
+        username,
+        password
+      })
+      console.log(loggedInUser)
+      window.localStorage.setItem(LOCAL_STORAGE_LOGGED_USER, JSON.stringify(loggedInUser))
+      blogService.setToken(loggedInUser.token)
+      dispatch({
+        type: 'LOGIN',
+        user: loggedInUser
+      })
+    } catch (exception) {
+      console.log(exception)
+      dispatch({
+        type: 'LOGIN_ERROR',
+        error: ''
+      })
+    }
   }
 }
 

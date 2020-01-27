@@ -2,13 +2,13 @@ import React, { useEffect } from 'react'
 import { connect } from 'react-redux'
 import {
   BrowserRouter as Router,
-  Route, Link
+  Route
 } from 'react-router-dom'
 
 import './App.css'
+import NavigationBar from './components/NavigationBar'
 import Toggable from './components/Togglable'
 import Login from './components/Login'
-import Notification from './components/Notification'
 import Blogs from './components/Blogs'
 import BlogForm from './components/BlogForm'
 import BlogComments from './components/BlogComments'
@@ -27,14 +27,7 @@ const App = (props) => {
   return (
     <div>
       <Router>
-        <div>
-          <Link to="/" >Blogs</Link>
-          <Link to="/users" >Users</Link>
-        </div>
-        <Notification />
-        <Toggable buttonLabel='Login'>
-          <Login />
-        </Toggable>
+        <NavigationBar />
         <Route exact path="/" render={() =>
           <>
             <Toggable buttonLabel='New blog'>
@@ -50,6 +43,7 @@ const App = (props) => {
         <Route exact path="/users/:id" render={({ match }) =>
           <User userId={match.params.id} />}
         />
+        <Route path="/login" render={() => <Login />} />
       </Router>
     </div>
   )

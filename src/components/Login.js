@@ -1,9 +1,9 @@
 import React from 'react'
 import { connect } from 'react-redux'
 
+import Notification from './Notification'
 import  { useField } from '../hooks'
 import { loginAction, logoutAction } from '../reducers/loginReducer'
-import { notifyAction } from '../reducers/notificationReducer'
 
 const Login = (props) => {
   const usernameField = useField('text', 'Username')
@@ -11,23 +11,37 @@ const Login = (props) => {
 
   const handleLogin = async (event) => {
     event.preventDefault()
-    try {
-      props.loginAction(usernameField.props.value, passwordField.props.value)
-      usernameField.clean()
-      passwordField.clean()
-      props.notifyAction({ message: 'Hello!', type: 'info' }, 10)
-    } catch (exception) {
-      props.notifyAction({ message: 'Wrong username or password', type: 'error' }, 10)
-    }
+    props.loginAction(usernameField.props.value, passwordField.props.value)
+    usernameField.clean()
+    passwordField.clean()
   }
 
   const handleLogout = () => {
     props.logoutAction()
   }
 
-  if (props.user === null) {
+  const displayNotification = () => {
+    if (props.error) {
+      const notification = { message: 'Wrong username or password', type: 'error' }
+      return <Notification notification={notification} />
+    }
+    return null
+  }
+
+  if (props.user) {
     return (
       <div>
+        {displayNotification()}
+        <p>
+          {props.user.name} logged in
+          <button onClick={() => handleLogout()}>Logout</button>
+        </p>
+      </div>
+    )
+  } else {
+    return (
+      <div>
+        {displayNotification()}
         <h2>Login</h2>
         <form onSubmit={handleLogin}>
           <div>
@@ -42,28 +56,20 @@ const Login = (props) => {
         </form>
       </div>
     )
-  } else {
-    return (
-      <div>
-        <p>
-          {props.user.name} logged in
-          <button onClick={() => handleLogout()}>Logout</button>
-        </p>
-      </div>
-    )
   }
 }
 
 const mapStateToProps = (state) => {
+  console.log(state)
   return {
-    user: state.user
+    user: state.user.data,
+    error: state.user.error
   }
 }
 
 const mapDispatchToProps = {
   loginAction,
-  logoutAction,
-  notifyAction
+  logoutAction
 }
 
 const ConnectedLogin = connect(

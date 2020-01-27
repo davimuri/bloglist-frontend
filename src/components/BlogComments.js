@@ -1,47 +1,57 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
+import IconButton from '@material-ui/core/IconButton'
+import DeleteIcon from '@material-ui/icons/Delete'
+import FavoriteIcon from '@material-ui/icons/Favorite'
+import { TextField, Button } from '@material-ui/core'
+import { makeStyles } from '@material-ui/core/styles'
 
 import  { useField } from '../hooks'
-import { notifyAction } from '../reducers/notificationReducer'
+import Notification from './Notification'
+import AlertDialog from './AlertDialog'
 import {
   initializeBlogsAction, likeBlogAction,
   deleteBlogAction, createBlogCommentAction
 } from '../reducers/blogReducer'
 
+const useStyles = makeStyles(theme => ({
+  root: {
+    display: 'flex',
+    flexWrap: 'wrap',
+  },
+  textField: {
+    marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(1),
+    width: 400,
+  },
+}))
+
 const BlogComments = props => {
+  const [openDialog, setOpenDialog] = useState(false)
   const commentField = useField('text', 'Comment')
+  const classes = useStyles()
 
   if (props.blog === undefined) {
     props.initializeBlogsAction()
     return null
   }
 
-  const handleLikeBlog = async () => {
-    try {
-      props.likeBlogAction(props.blog.id)
-      props.notifyAction({ message: 'Your like was added', type: 'info' }, 10)
-    } catch (exception) {
-      props.notifyAction({ message: exception.response.data.error, type: 'error' }, 10)
-    }
+  const handleDeleteBlog = async () => {
+    setOpenDialog(true)
   }
 
-  const handleDeleteBlog = async () => {
-    if (window.confirm(`Do you want to delete blog "${props.blog.title}" ?`)) {
-      try {
-        props.deleteBlogAction(props.blog.id)
-        props.notifyAction({ message: 'Blog deleted', type: 'info' }, 10)
-        props.history.push('/')
-      } catch (exception) {
-        props.notifyAction({ message: exception.response.data.error, type: 'error' }, 10)
-      }
-    }
+  const handleConfirmDeleteBlog = (blogId) => {
+    setOpenDialog(false)
+    props.deleteBlogAction(blogId)
   }
 
   const displayDeleteButton = () => {
     if (props.user && props.blog.user && props.user.username === props.blog.user.username) {
       return (
-        <button onClick={() => handleDeleteBlog()}>Delete</button>
+        <IconButton onClick={() => handleDeleteBlog()}>
+          <DeleteIcon />
+        </IconButton>
       )
     }
   }
@@ -49,24 +59,33 @@ const BlogComments = props => {
   const handleCreateComment = async (event) => {
     event.preventDefault()
     const text = commentField.props.value
-    try {
-      props.createBlogCommentAction(props.blog.id, text)
-      commentField.clean()
-      props.notifyAction({ message: 'Comment created', type: 'info' }, 10)
-    } catch (exception) {
-      props.notifyAction({ message: exception.response.data.error, type: 'error' }, 10)
+    props.createBlogCommentAction(props.blog.id, text)
+    commentField.clean()
+  }
+
+  const displayNotification = () => {
+    if (props.error) {
+      const notification = { message: props.error, type: 'error' }
+      return <Notification notification={notification} />
     }
+    if (props.success) {
+      const notification = { message: props.success, type: 'info' }
+      return <Notification notification={notification} />
+    }
+    return null
   }
 
   return (
     <div>
+      {displayNotification()}
       <h1>{props.blog.title}</h1>
-      <a href={props.blog.url} target='_blank' rel='noreferrer noopener'>{props.blog.url}</a><br />
-      {props.blog.likes} likes
-      <button onClick={() => handleLikeBlog()} >
-        Like
-      </button><br />
+      Author: {props.blog.author}<br />
+      Website: <a href={props.blog.url} target='_blank' rel='noreferrer noopener'>{props.blog.url}</a><br />
       Added by {props.blog.user ? props.blog.user.name : 'anonymous'}<br />
+      {props.blog.likes}
+      <IconButton onClick={() => props.likeBlogAction(props.blog.id)} aria-label="like">
+        <FavoriteIcon />
+      </IconButton>
       {displayDeleteButton()}
       <h3>Comments</h3>
       <ul>
@@ -74,10 +93,15 @@ const BlogComments = props => {
           <li key={comment.id}>{comment.text}</li>
         )}
       </ul>
-      <form onSubmit={handleCreateComment}>
-        <input {...commentField.props} />
-        <button type="submit">add comment</button>
+      <form onSubmit={handleCreateComment} className={classes.root}>
+        <TextField label="Comment" {...commentField.props} variant="filled" className={classes.textField} />
+        <Button variant="contained" color="primary" type="submit">Add</Button>
       </form>
+      <AlertDialog message='Do you want to delete blog?'
+        open={openDialog}
+        data={props.blog.id}
+        handleClose={() => setOpenDialog(false)}
+        handleYes={handleConfirmDeleteBlog} />
     </div>
   )
 }
@@ -85,11 +109,13 @@ const BlogComments = props => {
 const BlogCommentsWithRouter = withRouter(BlogComments)
 
 const mapStateToProps = (state, ownProps) => {
-  const blog = state.blogs.find(blog => ownProps.blogId === blog.id.toString())
+  const blog = state.blogs.data.find(blog => ownProps.blogId === blog.id.toString())
   if (blog) {
     return {
-      user: state.user,
-      blog
+      user: state.user.data,
+      blog,
+      success: state.blogs.success,
+      error: state.blogs.error
     }
   }
   return {
@@ -101,8 +127,7 @@ const mapDispatchToProps = {
   initializeBlogsAction,
   likeBlogAction,
   deleteBlogAction,
-  createBlogCommentAction,
-  notifyAction
+  createBlogCommentAction
 }
 
 const ConnectedBlogComments = connect(

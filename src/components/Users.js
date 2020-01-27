@@ -33,7 +33,6 @@ const Users = (props) => {
 
 const mapStateToProps = (state) => {
   return {
-    user: state.user,
     users: state.users
   }
 }

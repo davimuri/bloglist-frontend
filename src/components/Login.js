@@ -46,13 +46,13 @@ const Login = (props) => {
         <form onSubmit={handleLogin}>
           <div>
             username
-            <input {...usernameField.props} />
+            <input {...usernameField.props} data-test-id='username'/>
           </div>
           <div>
             password
-            <input {...passwordField.props} />
+            <input {...passwordField.props} data-test-id='password'/>
           </div>
-          <button type="submit">login</button>
+          <button type="submit" data-test-id='login'>login</button>
         </form>
       </div>
     )

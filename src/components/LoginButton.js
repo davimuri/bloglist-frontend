@@ -19,7 +19,7 @@ const LoginButton = (props) => {
     )
   } else {
     return (
-      <Button color="inherit" href="/login">Login</Button>
+      <Button color="inherit" href="/login" data-test-id="goToLogin">Login</Button>
     )
   }
 }
